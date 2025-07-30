@@ -7,59 +7,120 @@ class MyDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+    final colorScheme = Theme.of(context).colorScheme;
+
     Future<void> logOut() async {
       await FirebaseAuth.instance.signOut();
     }
 
     return Drawer(
-      backgroundColor: Theme.of(context).colorScheme.background,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            children: [
-              DrawerHeader(
-                child: Center(
-                  child: ClipOval(
-                    child: Image.asset('lib/images/vaga.png', scale: 10),
+      backgroundColor: colorScheme.background,
+      child: SafeArea(
+        child: Column(
+          children: [
+            // Header with Email and Avatar
+            DrawerHeader(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ClipOval(child: Image.asset('lib/images/vaga.png', scale: 8)),
+                  const SizedBox(height: 12),
+                  Text(
+                    user?.email ?? 'No Email',
+                    style: TextStyle(
+                      color: colorScheme.inversePrimary,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Menu Items
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  _buildDrawerItem(
+                    context,
+                    icon: Icons.home,
+                    title: 'Home',
+                    color: colorScheme.inversePrimary,
+                    onTap: () => Navigator.pop(context),
+                  ),
+                  _buildDrawerItem(
+                    context,
+                    icon: Icons.settings,
+                    title: 'Settings',
+                    color: colorScheme.inversePrimary,
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => SettingPage()),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+
+            // Logout Button
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+              child: GestureDetector(
+                onTap: logOut,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 14,
+                    horizontal: 16,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colorScheme.secondary,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.logout, color: colorScheme.inversePrimary),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Log Out',
+                        style: TextStyle(
+                          color: colorScheme.inversePrimary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: ListTile(
-                  title: Text('H O M E'),
-                  leading: Icon(Icons.home),
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: ListTile(
-                  title: Text('S E T T I N G S'),
-                  leading: Icon(Icons.settings),
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => SettingPage()),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.only(left: 8.0, bottom: 25),
-            child: ListTile(
-              title: Text('L O G O U T'),
-              leading: Icon(Icons.logout),
-              onTap: logOut,
             ),
-          ),
-        ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDrawerItem(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      child: ListTile(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        tileColor: Theme.of(context).colorScheme.tertiary.withOpacity(0.2),
+        leading: Icon(icon, color: color),
+        title: Text(
+          title.toUpperCase(),
+          style: TextStyle(color: color, fontWeight: FontWeight.w500),
+        ),
+        onTap: onTap,
       ),
     );
   }

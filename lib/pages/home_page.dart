@@ -15,17 +15,24 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final ChatServices _chatServices = ChatServices();
   final AuthServices _authservices = AuthServices();
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        foregroundColor: Colors.grey,
-
-        title: Center(child: Text('Home')),
+        title: const Text('Home'),
+        backgroundColor: theme.colorScheme.surface,
+        foregroundColor: theme.colorScheme.onSurface,
+        elevation: 2,
+        centerTitle: true,
       ),
-      drawer: MyDrawer(),
-      body: _buildUserList(),
+      drawer: const MyDrawer(),
+      body: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: _buildUserList(),
+      ),
     );
   }
 
@@ -34,18 +41,29 @@ class _HomePageState extends State<HomePage> {
       stream: _chatServices.getUsersStream(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          return Text('Error');
+          return const Center(
+            child: Text(
+              'Something went wrong!',
+              style: TextStyle(color: Colors.red),
+            ),
+          );
         }
+
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Text('loading...');
+          return const Center(child: CircularProgressIndicator());
         }
-        return ListView(
-          children:
-              snapshot.data!
-                  .map<Widget>(
-                    (userData) => _buildUserListItems(userData, context),
-                  )
-                  .toList(),
+
+        final users = snapshot.data!;
+        if (users.isEmpty) {
+          return const Center(child: Text('No users found.'));
+        }
+
+        return ListView.builder(
+          itemCount: users.length,
+          itemBuilder: (context, index) {
+            final userData = users[index];
+            return _buildUserListItems(userData, context);
+          },
         );
       },
     );
@@ -55,9 +73,18 @@ class _HomePageState extends State<HomePage> {
     Map<String, dynamic> userData,
     BuildContext context,
   ) {
-    if (userData['email'] != _authservices.getCurrentUser()!.email) {
-      return UserTitle(
-        text: userData['email'],
+    if (userData['email'] == _authservices.getCurrentUser()!.email) {
+      return const SizedBox(); // Don't show self
+    }
+
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: ListTile(
+        leading: const CircleAvatar(child: Icon(Icons.person_outline)),
+        title: Text(userData['email']),
+        trailing: const Icon(Icons.chat_bubble_outline),
         onTap: () {
           Navigator.push(
             context,
@@ -70,9 +97,7 @@ class _HomePageState extends State<HomePage> {
             ),
           );
         },
-      );
-    } else {
-      return Container();
-    }
+      ),
+    );
   }
 }

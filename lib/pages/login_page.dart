@@ -13,12 +13,13 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _passWordController = TextEditingController();
+  bool _obscurePassword = true;
 
   void login() {
     final _auth = AuthServices();
     _auth.signInWithEmailPasssword(
-      _emailController.text,
-      _passWordController.text,
+      _emailController.text.trim(),
+      _passWordController.text.trim(),
     );
   }
 
@@ -27,106 +28,133 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.background,
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           image: DecorationImage(
             image: AssetImage('lib/images/pp.png'),
             fit: BoxFit.cover,
           ),
         ),
         child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-
-            children: [
-              ClipOval(child: Image.asset('lib/images/vaga.png', scale: 10)),
-              SizedBox(height: 50),
-              Text(
-                'Welcome back',
-                style: TextStyle(
-                  color: const Color.fromARGB(255, 183, 201, 233),
-                ),
-              ),
-              SizedBox(height: 25),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18),
-                child: Container(
-                  padding: EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    color: Theme.of(context).colorScheme.tertiary,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ClipOval(child: Image.asset('lib/images/vaga.png', scale: 10)),
+                const SizedBox(height: 50),
+                const Text(
+                  'Welcome back',
+                  style: TextStyle(
+                    color: Color.fromARGB(255, 183, 201, 233),
+                    fontSize: 16,
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 8),
-                    child: TextField(
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        hintText: 'Email',
+                ),
+                const SizedBox(height: 25),
+
+                // Email
+                _buildInputField(
+                  controller: _emailController,
+                  hintText: 'Email',
+                  obscureText: false,
+                ),
+
+                const SizedBox(height: 10),
+
+                // Password
+                _buildInputField(
+                  controller: _passWordController,
+                  hintText: 'Password',
+                  obscureText: _obscurePassword,
+                  toggleVisibility: () {
+                    setState(() {
+                      _obscurePassword = !_obscurePassword;
+                    });
+                  },
+                  isPasswordField: true,
+                  isObscured: _obscurePassword,
+                ),
+
+                const SizedBox(height: 20),
+
+                // Login Button
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 18),
+                  child: GestureDetector(
+                    onTap: login,
+                    child: Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        color: Theme.of(context).colorScheme.secondary,
                       ),
-                      controller: _emailController,
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(height: 10),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18),
-                child: Container(
-                  padding: EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    color: Theme.of(context).colorScheme.tertiary,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 8),
-                    child: TextField(
-                      decoration: const InputDecoration(
-                        border: InputBorder.none,
-                        hintText: 'password',
+                      child: const Center(
+                        child: Text('Login', style: TextStyle(fontSize: 16)),
                       ),
-                      obscureText: true,
-                      controller: _passWordController,
                     ),
                   ),
                 ),
-              ),
-              SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18),
-                child: GestureDetector(
-                  onTap: login,
-                  child: Container(
-                    child: Center(child: Text('Login')),
-                    padding: EdgeInsets.all(30),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
 
-                      color: Theme.of(context).colorScheme.secondary,
+                const SizedBox(height: 40),
+
+                // Register link
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Not a member?',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 4),
+                    GestureDetector(
+                      onTap: widget.showRegisterPage,
+                      child: const Text(
+                        'Register now',
+                        style: TextStyle(color: Colors.blueAccent),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              SizedBox(height: 40),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
-                children: [
-                  Text(
-                    'Not a member ?',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                  SizedBox(width: 4),
-                  GestureDetector(
-                    onTap: widget.showRegisterPage,
-                    child: Text(
-                      'Register now',
-                      style: TextStyle(color: Colors.blueAccent),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+  Widget _buildInputField({
+    required TextEditingController controller,
+    required String hintText,
+    required bool obscureText,
+    VoidCallback? toggleVisibility,
+    bool isPasswordField = false,
+    bool isObscured = false,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 18),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: Theme.of(context).colorScheme.tertiary,
+        ),
+        child: TextField(
+          controller: controller,
+          obscureText: obscureText,
+          decoration: InputDecoration(
+            border: InputBorder.none,
+            hintText: hintText,
+            suffixIcon:
+                isPasswordField
+                    ? IconButton(
+                      icon: Icon(
+                        isObscured ? Icons.visibility_off : Icons.visibility,
+                        color: Colors.grey[600],
+                      ),
+                      onPressed: toggleVisibility,
+                    )
+                    : null,
           ),
         ),
       ),

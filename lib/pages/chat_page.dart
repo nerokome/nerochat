@@ -27,7 +27,7 @@ class ChatPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 187, 215, 238),
+        backgroundColor: const Color.fromARGB(255, 38, 92, 136),
         title: Text(recieverEmail),
       ),
       body: Container(
